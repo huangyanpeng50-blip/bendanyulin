@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小黄杉的官网</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts: Inter 与 Noto Sans SC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 引入 Lucide 图标库 -->
+    <script src="奶奶家.PNG"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 幻灯片平滑淡入淡出过渡 */
+        .carousel-slide {
+            transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1), transform 6s ease-out;
+        }
+        .slide-active {
+            opacity: 1;
+            z-index: 10;
+            transform: scale(1.03);
+        }
+        .slide-inactive {
+            opacity: 0;
+            z-index: 0;
+            transform: scale(1);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-slate-900 selection:text-white">
+
+    <!-- ==================== 1. 顶部极简导航栏 ==================== -->
+    <header class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/70 sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <!-- 网站 Logo / 名称 -->
+            <div class="flex items-center space-x-2.5">
+                <img src="logo.JPG" alt="Logo" class="h-8 w-auto object-contain rounded-lg">
+                <span class="font-bold text-lg tracking-tight text-slate-900">小黄杉的官网</span>
+            </div>
+
+            <!-- 操作区：一键多选本图片 & 恢复默认 -->
+            <!--<div class="flex items-center space-x-2.5">
+                <button id="reset-btn" onclick="resetDefaultSlides()" class="hidden text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-900 px-3 py-2 rounded-full transition-colors">
+                    恢复默认
+                </button>
+                <label for="local-files-input" class="cursor-pointer inline-flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-full shadow-sm transition-all active:scale-95">
+                    <i data-lucide="folder-plus" class="w-4 h-4"></i>
+                    <span>本地选图</span>
+                </label>
+                <!-- 隐藏的多文件选择器 -->
+
+                <input id="local-files-input" type="file" accept="image/*" multiple class="hidden" onchange="handleLocalFilesSelect(event)">
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== 2. 页面主体：居中大尺寸轮播卡片 ==================== -->
+    <main class="flex-1 flex flex-col items-center justify-center w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        
+        <!-- 轮播主容器卡片 -->
+        <div id="carousel-card" class="relative w-full aspect-[4/3] sm:aspect-[16/9] max-h-[74vh] rounded-3xl overflow-hidden bg-slate-200 shadow-2xl shadow-slate-300/60 border border-white select-none group">
+            
+            <!-- 幻灯片列表容器 -->
+            <div id="slides-wrapper" class="relative w-full h-full"></div>
+
+            <!-- 顶部状态胶囊栏：张数指示 & 播放/暂停按钮 -->
+            <div class="absolute top-4 sm:top-6 left-4 sm:left-6 right-4 sm:right-6 z-20 flex items-center justify-between pointer-events-none">
+                <!-- 当前张数指示 (如 1 / 5) -->
+                <div class="pointer-events-auto px-3.5 py-1.5 rounded-full bg-black/35 backdrop-blur-md text-white text-xs font-medium tracking-wider border border-white/15">
+                    <span id="slide-counter">1 / 5</span>
+                </div>
+
+                <!-- 播放 / 暂停小按钮 -->
+                <button id="play-toggle-btn" onclick="toggleAutoPlay()" aria-label="播放或暂停" class="pointer-events-auto inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-black/35 hover:bg-black/55 backdrop-blur-md text-white text-xs font-medium border border-white/15 transition-colors">
+                    <i id="play-toggle-icon" data-lucide="pause" class="w-3.5 h-3.5"></i>
+                    <span id="play-toggle-text">自动轮播</span>
+                </button>
+            </div>
+
+            <!-- 左右切换箭头按钮 -->
+            <button onclick="prevSlide()" aria-label="上一张" class="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/85 hover:bg-white text-slate-900 shadow-lg flex items-center justify-center opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95">
+                <i data-lucide="chevron-left" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+            </button>
+
+            <button onclick="nextSlide()" aria-label="下一张" class="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/85 hover:bg-white text-slate-900 shadow-lg flex items-center justify-center opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95">
+                <i data-lucide="chevron-right" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+            </button>
+
+            <!-- 底部信息渐变遮罩：标题、副标题 & 指示器圆点 -->
+            <div class="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-16 pb-5 sm:pb-7 px-5 sm:px-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <!-- 图片标题与副标题 -->
+                <div class="text-white max-w-xl">
+                    <h2 id="slide-title" class="text-lg sm:text-2xl font-bold tracking-tight leading-snug drop-shadow-sm">
+                        加载中...
+                    </h2>
+                    <p id="slide-subtitle" class="text-xs sm:text-sm text-white/80 mt-1 line-clamp-1">
+                        请稍候
+                    </p>
+                </div>
+
+                <!-- 底部圆点指示器 -->
+                <div id="dots-container" class="flex items-center space-x-2 self-start sm:self-end pb-1"></div>
+            </div>
+        </div>
+
+        <!-- 底部操作提示小字 -->
+        <p class="mt-4 text-xs text-slate-400 text-center">
+            支持左右滑动嘿嘿
+        </p>
+    </main>
+
+    <!-- ==================== 3. 极简页脚 ==================== -->
+    <footer class="w-full py-5 text-center text-xs text-slate-400 border-t border-slate-200/60 bg-white/50">
+        &copy; 2026 满天都是小黄杉 · 图片轮播展示空间
+    </footer>
+
+    <!-- 轻提示 Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-slate-900 text-white text-xs font-medium shadow-xl opacity-0 pointer-events-none transition-opacity duration-300">
+        提示信息
+    </div>
+
+    <!-- ==================== JAVASCRIPT 核心逻辑 ==================== -->
+    <script>
+        // 1. 默认内置 5 张高清风景/艺术摄影图
+        const defaultSlides = [
+            {
+                url: '微信图片_2026-11-20_212931_707.jpg',
+                title: '哈哈哈',
+                subtitle: '哈哈哈哈'
+            },
+            {
+                url: '微信图片_2026-11-20_213022_226.jpg',
+                title: '迷雾森林与金色山脊',
+                subtitle: '破晓时分，云海在群山之间缓缓流动的自然画卷'
+            },
+            {
+                url: '奶奶家.PNG',
+                title: '丑照',
+                subtitle: '^_^'
+            },
+            {
+                url: '微信图片_2026-11-20_213034_971.jpg',
+                title: '毕业照',
+                subtitle: '🦄'
+            },
+            {
+                url: '截屏2026-11-20 下午9.48.13.png',
+                title: '又靠近了一个冬天',
+                subtitle: '🐷'
+            }
+        ];
+
+        let slides = [...defaultSlides];
+        let currentIndex = 0;
+        let isPlaying = true;
+        let isHovered = false;
+        let autoPlayTimer = null;
+        const INTERVAL_MS = 3000; // 每隔 3 秒自动切换
+
+        // 2. 初始化与渲染轮播视图
+        function renderSlides() {
+            const wrapper = document.getElementById('slides-wrapper');
+            const dotsContainer = document.getElementById('dots-container');
+
+            // 渲染图片层
+            wrapper.innerHTML = slides.map((slide, idx) => `
+                <img src="${slide.url}" 
+                     alt="${slide.title}"
+                     onerror="this.src='https://placehold.co/1600x900/e2e8f0/475569?text=Image+${idx + 1}'"
+                     class="carousel-slide absolute inset-0 w-full h-full object-cover ${idx === currentIndex ? 'slide-active' : 'slide-inactive'}">
+            `).join('');
+
+            // 渲染底部圆点指示器
+            dotsContainer.innerHTML = slides.map((_, idx) => `
+                <button onclick="goToSlide(${idx})" 
+                        aria-label="切换到第 ${idx + 1} 张"
+                        class="h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-7 bg-white' : 'w-2 bg-white/45 hover:bg-white/80'}">
+                </button>
+            `).join('');
+
+            updateSlideInfo();
+        }
+
+        // 更新当前标题、副标题、张数指示及激活状态
+        function updateSlideInfo() {
+            const current = slides[currentIndex];
+            document.getElementById('slide-title').textContent = current.title;
+            document.getElementById('slide-subtitle').textContent = current.subtitle;
+            document.getElementById('slide-counter').textContent = `${currentIndex + 1} / ${slides.length}`;
+
+            // 更新图片类名实现平滑淡入淡出
+            const imgElements = document.querySelectorAll('#slides-wrapper .carousel-slide');
+            imgElements.forEach((img, idx) => {
+                if (idx === currentIndex) {
+                    img.classList.add('slide-active');
+                    img.classList.remove('slide-inactive');
+                } else {
+                    img.classList.remove('slide-active');
+                    img.classList.add('slide-inactive');
+                }
+            });
+
+            // 更新指示器圆点状态
+            const dotButtons = document.querySelectorAll('#dots-container button');
+            dotButtons.forEach((dot, idx) => {
+                if (idx === currentIndex) {
+                    dot.className = 'h-2 rounded-full transition-all duration-300 w-7 bg-white';
+                } else {
+                    dot.className = 'h-2 rounded-full transition-all duration-300 w-2 bg-white/45 hover:bg-white/80';
+                }
+            });
+        }
+
+        // 3. 切换控制函数
+        function goToSlide(index) {
+            currentIndex = (index + slides.length) % slides.length;
+            updateSlideInfo();
+            restartAutoPlay();
+        }
+
+        function nextSlide() {
+            goToSlide(currentIndex + 1);
+        }
+
+        function prevSlide() {
+            goToSlide(currentIndex - 1);
+        }
+
+        // 4. 自动播放与悬停暂停逻辑
+        function startAutoPlay() {
+            stopAutoPlay();
+            autoPlayTimer = setInterval(() => {
+                if (isPlaying && !isHovered && slides.length > 1) {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    updateSlideInfo();
+                }
+            }, INTERVAL_MS);
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayTimer) {
+                clearInterval(autoPlayTimer);
+                autoPlayTimer = null;
+            }
+        }
+
+        function restartAutoPlay() {
+            if (isPlaying) startAutoPlay();
+        }
+
+        function toggleAutoPlay() {
+            isPlaying = !isPlaying;
+            const icon = document.getElementById('play-toggle-icon');
+            const text = document.getElementById('play-toggle-text');
+
+            if (isPlaying) {
+                icon.setAttribute('data-lucide', 'pause');
+                text.textContent = '自动轮播';
+                startAutoPlay();
+            } else {
+                icon.setAttribute('data-lucide', 'play');
+                text.textContent = '已暂停';
+                stopAutoPlay();
+            }
+            lucide.createIcons();
+        }
+
+        // 5. 本地多选图片替换轮播列表
+        function handleLocalFilesSelect(event) {
+            const files = Array.from(event.target.files).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+
+            const newSlides = files.map((file, idx) => {
+                // 去除文件扩展名作为标题
+                const cleanName = file.name.replace(/\.[^/.]+$/, '');
+                return {
+                    url: URL.createObjectURL(file),
+                    title: cleanName || `本地图片 ${idx + 1}`,
+                    subtitle: `自定义本地画廊 · 第 ${idx + 1} 张（共 ${files.length} 张）`
+                };
+            });
+
+            slides = newSlides;
+            currentIndex = 0;
+            renderSlides();
+            restartAutoPlay();
+
+            document.getElementById('reset-btn').classList.remove('hidden');
+            showToast(`已成功加载 ${files.length} 张本地图片`);
+            event.target.value = ''; // 允许重复选择相同文件
+        }
+
+        function resetDefaultSlides() {
+            slides = [...defaultSlides];
+            currentIndex = 0;
+            renderSlides();
+            restartAutoPlay();
+            document.getElementById('reset-btn').classList.add('hidden');
+            showToast('已恢复默认精选画廊');
+        }
+
+        // 轻提示框
+        let toastTimer = null;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        // 6. 交互事件监听：悬停暂停、键盘方向键、移动端触摸滑动
+        const card = document.getElementById('carousel-card');
+        card.addEventListener('mouseenter', () => { isHovered = true; });
+        card.addEventListener('mouseleave', () => { isHovered = false; });
+
+        // 键盘左右方向键支持
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // 移动端触摸滑动支持
+        let touchStartX = 0;
+        card.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        card.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        }, { passive: true });
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            renderSlides();
+            startAutoPlay();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
